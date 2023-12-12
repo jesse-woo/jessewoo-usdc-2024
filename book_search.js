@@ -128,7 +128,7 @@ const twentyLeaguesOut = {
  * Please add your unit tests below.
  * */
 
-/** We can check that, given a known input, we get a known output. */
+/** 1. We can check that, given a known input, we get a known output. */
 const test1result = findSearchTermInBooks("the", twentyLeaguesIn);
 if (JSON.stringify(twentyLeaguesOut) === JSON.stringify(test1result)) {
     console.log("PASS: Test 1");
@@ -138,7 +138,7 @@ if (JSON.stringify(twentyLeaguesOut) === JSON.stringify(test1result)) {
     console.log("Received:", test1result);
 }
 
-/** We could choose to check that we get the right number of results. */
+/** 2. We could choose to check that we get the right number of results. */
 const test2result = findSearchTermInBooks("the", twentyLeaguesIn); 
 if (test2result.Results.length == 1) {
     console.log("PASS: Test 2");
@@ -148,7 +148,7 @@ if (test2result.Results.length == 1) {
     console.log("Received:", test2result.Results.length);
 }
 
-// Test exact match on case: "The" vs. "the".
+// 3. Test exact match on case: "The" vs. "the".
 const expectedTest3 = {
     "SearchTerm" : "The",
     "Results" : [
@@ -171,7 +171,7 @@ if (test3result.Results.length == 1 &&
     console.log("Received:", test3result);
 }
 
-/* Test for match on a partial word. SearchTerm "moment" should return
+/* 4. Test for match on a partial word. SearchTerm "moment" should return
 matching line containing "momentum".
 */
 const expectedTest4 = {
@@ -196,9 +196,9 @@ if (test4result.Results.length == 1 &&
     console.log("Received:", test4result);
 }
 
-// Negative test, for no match.
+// 5. Negative test, for no match.
 const expectedTest5 = {
-    "SearchTerm" : "moment",
+    "SearchTerm" : "Jesse",
     "Results" : [
         {
             "ISBN": "9780000528531", 
@@ -216,7 +216,7 @@ if (test5result.Results.length == 0) {
     console.log("Received:", test5result);
 }
 
-// Test for non-string input type
+// 6. Test for non-string input type
 try {
     const test6result = findSearchTermInBooks(10, twentyLeaguesIn); 
 } catch (error) {
@@ -227,13 +227,122 @@ try {
     }
 }
 
-// Test book with no scans
+// 7. Test book with no scans
+const noScanInput = [
+    {
+        "Title": "Empty Book",
+        "ISBN": "9876543210",
+        "Content": [] 
+    }
+]
+const expectedTest7 = {
+    "SearchTerm" : "Jesse",
+    "Results" : []
+}
+const test7result = findSearchTermInBooks("Jesse", noScanInput); 
+if (JSON.stringify(test7result.Results) === "[]") {
+    console.log("PASS: Test 7");
+} else {
+    console.log("FAIL: Test 7");
+    console.log("Expected:", expectedTest7);
+    console.log("Received:", test7result);
+}
 
+// 8. Test object with no books
+const noBookInput = []
+const expectedTest8 = {
+    "SearchTerm" : "Jesse",
+    "Results" : []
+}
+const test8result = findSearchTermInBooks("Jesse", noBookInput); 
+if (JSON.stringify(test8result.Results) === "[]") {
+    console.log("PASS: Test 8");
+} else {
+    console.log("FAIL: Test 8");
+    console.log("Expected:", expectedTest8);
+    console.log("Received:", test8result);
+}
 
-// Test object with no books
+// 9. Test with scans but some data has null values
+const nullValsInScan = [
+    {
+        "Title": "The Stranger",
+        "ISBN": "678912345",
+        "Content": [
+            {
+                "Page": 10,
+                "Line": null,
+                "Text": "Here lies search term foo"
+            }
+        ]
+    }
+]
+const expectedTest9 = {
+    "SearchTerm" : "foo",
+    "Results" : [
+        {
+            "ISBN" : "678912345",
+            "Page" : 10,
+            "Line" : null
+        }
+    ]
+}
+const test9result = findSearchTermInBooks("foo", nullValsInScan); 
+// Note that null and undefined are different types and could mess up this test if they are mixed.
+if (JSON.stringify(expectedTest9.Results) === JSON.stringify(test9result.Results)) {
+    console.log("PASS: Test 9");
+} else {
+    console.log("FAIL: Test 9");
+    console.log("Expected:", expectedTest9);
+    console.log("Received:", test9result);
+}
 
+// 10. Test when searchTerm foo shows up on different pages in same book
+const expectedTest10 = {
+    "SearchTerm" : "foo",
+    "Results" : [
+        {
+            "ISBN" : "1234567890",
+            "Page" : 10,
+            "Line" : 30
+        },
+        {
+            "ISBN" : "1234567890",
+            "Page" : 21,
+            "Line" : 33
+        }
+    ]
+}
+const test10result = findSearchTermInBooks("foo", twentyLeaguesIn); 
+if (JSON.stringify(expectedTest10.Results) === JSON.stringify(test10result.Results)) {
+    console.log("PASS: Test 10");
+} else {
+    console.log("FAIL: Test 10");
+    console.log("Expected:", expectedTest10);
+    console.log("Received:", test10result);
+}
 
-// Test when searchTerm foo shows up on different pages in same book
-
-
-// Test when searchTerm bar shows up twice in the same page and line
+// 11. Test when searchTerm bar shows up twice in the same page and line
+const expectedTest11 = {
+    "SearchTerm" : "bar",
+    "Results" : [
+        {
+            "ISBN" : "1234567890",
+            "Page" : 11,
+            "Line" : 33
+        },
+        {
+            "ISBN" : "1234567890",
+            "Page" : 11,
+            "Line" : 33
+        }
+    ]
+}
+const test11result = findSearchTermInBooks("bar", twentyLeaguesIn); 
+if (JSON.stringify(expectedTest11.Results) === JSON.stringify(test11result.Results)) {
+    console.log("PASS: Test 11");
+} else {
+    console.log("FAIL: Test 11");
+    console.log("Expected:", expectedTest11);
+    console.log("Received:", test11result);
+}
